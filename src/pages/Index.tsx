@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Copy, Plus, MessageCircle, DollarSign, Shield, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,19 +33,52 @@ const Index = () => {
   const [responses, setResponses] = useState<Response[]>([]);
   const [newResponse, setNewResponse] = useState({ title: '', content: '', category: 'general' });
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const savedResponses = localStorage.getItem('arabicResponses');
-    if (savedResponses) {
-      setResponses(JSON.parse(savedResponses));
+  const fetchResponses = async () => {
+    try {
+      const response = await fetch('/responses.json');
+      if (response.ok) {
+        const data = await response.json();
+        setResponses(data);
+      }
+    } catch (error) {
+      console.error('Error fetching responses:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في تحميل الردود",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
-
-  const saveResponses = (updatedResponses: Response[]) => {
-    setResponses(updatedResponses);
-    localStorage.setItem('arabicResponses', JSON.stringify(updatedResponses));
   };
+
+  const saveResponsesToFile = async (updatedResponses: Response[]) => {
+    try {
+      // Note: In a real application, you would need a backend API to save the file
+      // For now, we'll update the state and show a warning
+      setResponses(updatedResponses);
+      
+      toast({
+        title: "تنبيه",
+        description: "تم حفظ التغييرات محلياً. لحفظ دائم، تحتاج إلى خادم خلفي.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error('Error saving responses:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في حفظ الردود",
+        variant: "destructive"
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchResponses();
+  }, []);
 
   const handleAddResponse = () => {
     if (!newResponse.title.trim() || !newResponse.content.trim()) {
@@ -66,7 +98,7 @@ const Index = () => {
     };
 
     const updatedResponses = [...responses, response];
-    saveResponses(updatedResponses);
+    saveResponsesToFile(updatedResponses);
     setNewResponse({ title: '', content: '', category: 'general' });
     setShowForm(false);
     
@@ -91,13 +123,24 @@ const Index = () => {
 
   const handleDeleteResponse = (responseId: string, responseTitle: string) => {
     const updatedResponses = responses.filter(response => response.id !== responseId);
-    saveResponses(updatedResponses);
+    saveResponsesToFile(updatedResponses);
     
     toast({
       title: "تم الحذف بنجاح",
       description: `تم حذف "${responseTitle}" بنجاح`
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <MessageCircle className="w-16 h-16 text-green-500 mx-auto mb-4 animate-pulse" />
+          <p className="text-xl text-slate-300">جاري تحميل الردود...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
