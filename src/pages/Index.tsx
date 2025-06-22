@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Copy, Plus, MessageCircle, DollarSign, Shield, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,39 +30,6 @@ const CATEGORY_ICONS = {
   advantages: Star
 };
 
-const DEFAULT_RESPONSES: Response[] = [
-  {
-    id: '1',
-    title: 'ترحيب بالعميل الجديد',
-    content: 'أهلاً وسهلاً بك! يسعدني التواصل معك. كيف يمكنني مساعدتك اليوم؟ أنا هنا للإجابة على جميع استفساراتك وتقديم أفضل الخدمات.',
-    category: 'general'
-  },
-  {
-    id: '2',
-    title: 'الاستفسار عن الخدمات',
-    content: 'نقدم مجموعة شاملة من الخدمات المتخصصة التي تلبي احتياجاتك بأعلى معايير الجودة والاحترافية. يمكنني تقديم تفاصيل أكثر حول الخدمة التي تهتم بها.',
-    category: 'general'
-  },
-  {
-    id: '3',
-    title: 'أسعار الخدمات الأساسية',
-    content: 'أسعارنا تنافسية جداً مقارنة بالسوق، ونقدم قيمة استثنائية مقابل السعر. يمكنني إرسال عرض سعر مفصل يناسب احتياجاتك المحددة.',
-    category: 'pricing'
-  },
-  {
-    id: '4',
-    title: 'التعامل مع الاعتراض على السعر',
-    content: 'أتفهم قلقك بشأن التكلفة. دعني أوضح لك القيمة الحقيقية التي ستحصل عليها والنتائج المضمونة التي ستحققها من استثمارك معنا.',
-    category: 'objections'
-  },
-  {
-    id: '5',
-    title: 'مميزات العمل معي',
-    content: 'خبرة عملية واسعة، التزام بالمواعيد، جودة عالية في التنفيذ، متابعة مستمرة، وضمان الرضا التام. نحن نضمن تحقيق أهدافك بأفضل الطرق الممكنة.',
-    category: 'advantages'
-  }
-];
-
 const Index = () => {
   const [responses, setResponses] = useState<Response[]>([]);
   const [newResponse, setNewResponse] = useState({ title: '', content: '', category: 'general' });
@@ -72,9 +40,6 @@ const Index = () => {
     const savedResponses = localStorage.getItem('arabicResponses');
     if (savedResponses) {
       setResponses(JSON.parse(savedResponses));
-    } else {
-      setResponses(DEFAULT_RESPONSES);
-      localStorage.setItem('arabicResponses', JSON.stringify(DEFAULT_RESPONSES));
     }
   }, []);
 
@@ -231,86 +196,94 @@ const Index = () => {
         )}
 
         {/* Response Categories */}
-        <div className="space-y-12">
-          {Object.entries(CATEGORIES).map(([categoryKey, categoryName]) => {
-            const categoryResponses = getResponsesByCategory(categoryKey);
-            const IconComponent = CATEGORY_ICONS[categoryKey as keyof typeof CATEGORY_ICONS];
-            
-            if (categoryResponses.length === 0) return null;
-            
-            return (
-              <div key={categoryKey} className="animate-fade-in">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl green-glow">
-                    <IconComponent className="w-6 h-6 text-white" />
+        {responses.length === 0 ? (
+          <div className="text-center py-16">
+            <MessageCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-400 mb-2">لا توجد ردود محفوظة</h3>
+            <p className="text-slate-500">ابدأ بإضافة ردك الأول باستخدام الزر أعلاه</p>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {Object.entries(CATEGORIES).map(([categoryKey, categoryName]) => {
+              const categoryResponses = getResponsesByCategory(categoryKey);
+              const IconComponent = CATEGORY_ICONS[categoryKey as keyof typeof CATEGORY_ICONS];
+              
+              if (categoryResponses.length === 0) return null;
+              
+              return (
+                <div key={categoryKey} className="animate-fade-in">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl green-glow">
+                      <IconComponent className="w-6 h-6 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-green-400">{categoryName}</h2>
+                    <div className="flex-1 h-px bg-gradient-to-l from-green-500 to-slate-700"></div>
                   </div>
-                  <h2 className="text-2xl font-bold text-green-400">{categoryName}</h2>
-                  <div className="flex-1 h-px bg-gradient-to-l from-green-500 to-slate-700"></div>
-                </div>
-                
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {categoryResponses.map((response, index) => (
-                    <Card
-                      key={response.id}
-                      className="border-slate-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-slate-800/90 backdrop-blur-sm group animate-slide-in card-shadow hover:card-shadow-hover"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <CardTitle className="text-lg font-semibold text-green-400 leading-relaxed flex-1">
-                            {response.title}
-                          </CardTitle>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-slate-800 border-slate-600">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
-                                <AlertDialogDescription className="text-slate-300">
-                                  هل أنت متأكد من أنك تريد حذف "{response.title}"؟ لن يمكن التراجع عن هذا الإجراء.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600">
-                                  إلغاء
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteResponse(response.id, response.title)}
-                                  className="bg-red-600 hover:bg-red-700 text-white"
+                  
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {categoryResponses.map((response, index) => (
+                      <Card
+                        key={response.id}
+                        className="border-slate-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-slate-800/90 backdrop-blur-sm group animate-slide-in card-shadow hover:card-shadow-hover"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-lg font-semibold text-green-400 leading-relaxed flex-1">
+                              {response.title}
+                            </CardTitle>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
                                 >
-                                  حذف
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="text-slate-300 leading-relaxed text-sm">
-                          {response.content}
-                        </p>
-                        <Button
-                          onClick={() => handleCopy(response.content, response.title)}
-                          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 rounded-lg font-semibold transition-all duration-300 group-hover:shadow-lg"
-                        >
-                          <Copy className="w-4 h-4 ml-2" />
-                          نسخ الرد
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-slate-800 border-slate-600">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-slate-300">
+                                    هل أنت متأكد من أنك تريد حذف "{response.title}"؟ لن يمكن التراجع عن هذا الإجراء.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600">
+                                    إلغاء
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteResponse(response.id, response.title)}
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                  >
+                                    حذف
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <p className="text-slate-300 leading-relaxed text-sm">
+                            {response.content}
+                          </p>
+                          <Button
+                            onClick={() => handleCopy(response.content, response.title)}
+                            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 rounded-lg font-semibold transition-all duration-300 group-hover:shadow-lg"
+                          >
+                            <Copy className="w-4 h-4 ml-2" />
+                            نسخ الرد
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="text-center mt-16 pt-8 border-t border-slate-700">
