@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from 'react';
-import { Copy, Plus, MessageCircle, DollarSign, Shield, Star } from 'lucide-react';
+import { Copy, Plus, MessageCircle, DollarSign, Shield, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface Response {
@@ -122,6 +122,16 @@ const Index = () => {
 
   const getResponsesByCategory = (category: string) => {
     return responses.filter(response => response.category === category);
+  };
+
+  const handleDeleteResponse = (responseId: string, responseTitle: string) => {
+    const updatedResponses = responses.filter(response => response.id !== responseId);
+    saveResponses(updatedResponses);
+    
+    toast({
+      title: "تم الحذف بنجاح",
+      description: `تم حذف "${responseTitle}" بنجاح`
+    });
   };
 
   return (
@@ -246,9 +256,41 @@ const Index = () => {
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-lg font-semibold text-green-400 leading-relaxed">
-                          {response.title}
-                        </CardTitle>
+                        <div className="flex items-start justify-between gap-2">
+                          <CardTitle className="text-lg font-semibold text-green-400 leading-relaxed flex-1">
+                            {response.title}
+                          </CardTitle>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-slate-800 border-slate-600">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+                                <AlertDialogDescription className="text-slate-300">
+                                  هل أنت متأكد من أنك تريد حذف "{response.title}"؟ لن يمكن التراجع عن هذا الإجراء.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600">
+                                  إلغاء
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteResponse(response.id, response.title)}
+                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  حذف
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <p className="text-slate-300 leading-relaxed text-sm">
